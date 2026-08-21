@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SKILL插件市场管理器 · dsh-skills-marketplace</title>
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#17181f; --panel2:#1e2027; --border:#2a2d38;
+    --text:#e6e8ee; --muted:#9aa0b0; --accent:#5b8cff; --accent2:#3b82f6;
+    --ok:#3ecf8e; --warn:#f5b85c; --err:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+       background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto;padding:24px 20px 80px}
+  h1{font-size:22px;margin:0 0 4px} .sub{color:var(--muted);margin-bottom:20px}
+  h2{font-size:16px;margin:28px 0 12px;color:var(--accent)}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .btn{background:var(--accent2);border:none;color:#fff;border-radius:8px;padding:8px 14px;
+       cursor:pointer;font-size:13px} .btn:hover{filter:brightness(1.1)}
+  .btn.ghost{background:var(--panel2);border:1px solid var(--border);color:var(--text)}
+  .btn.danger{background:#3a1f24;border:1px solid #6b3a42;color:var(--err)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  input,select{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+       color:var(--text);padding:8px 10px;font-size:13px;min-width:180px}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .plugin{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:border .15s}
+  .plugin:hover{border-color:var(--accent)}
+  .plugin h3{margin:0 0 4px;font-size:15px}
+  .plugin .desc{color:var(--muted);font-size:12px;margin-bottom:8px;min-height:36px}
+  .badge{display:inline-block;background:#232638;border:1px solid var(--border);color:var(--muted);
+       border-radius:999px;padding:2px 8px;font-size:11px}
+  .skill{display:flex;align-items:center;justify-content:space-between;gap:10px;
+       background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+  .skill .name{font-weight:600} .skill .desc{color:var(--muted);font-size:12px}
+  .switch{position:relative;width:40px;height:22px;flex:none}
+  .switch input{display:none}
+  .slider{position:absolute;inset:0;background:#33363f;border-radius:999px;cursor:pointer;transition:.2s}
+  .slider:before{content:"";position:absolute;width:16px;height:16px;border-radius:50%;
+       background:#fff;left:3px;top:3px;transition:.2s}
+  .switch input:checked + .slider{background:var(--accent2)}
+  .switch input:checked + .slider:before{transform:translateX(18px)}
+  .muted{color:var(--muted)} .err{color:var(--err)} .ok{color:var(--ok)}
+  .toast{position:fixed;top:18px;right:18px;background:var(--panel2);border:1px solid var(--border);
+       border-radius:10px;padding:12px 16px;z-index:99;display:none;max-width:320px;box-shadow:0 6px 24px #0008}
+  .toast.show{display:block}
+  .back{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;padding:0;margin-bottom:10px}
+  .section-tag{margin:20px 0 8px;color:var(--muted)} .empty{color:var(--muted);padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>SKILL插件市场管理器</h1>
+  <div class="sub">DSH 仓库 SKILL 插件市场:按 仓库地址 + 分支 + 稀疏路径 拉取插件/技能,安装进 ~/.dsh/skills · 插件维度管理</div>
+
+  <button class="btn" id="addMarketBtn">＋ 添加插件市场</button>
+
+  <div id="addFormWrap" style="display:none" class="card" style_="margin-top:14px">
+    <div style="margin-top:14px" id="addForm">
+      <div class="row" style="margin-top:12px">
+        <div><label>来源(Git URL/Corg/仓库)</label><input id="inp-url" placeholder="org/repo 或 git@…/https://…" style="min-width:320px"></div>
+        <div><label>Git 引用</label><input id="inp-ref" placeholder="master" value="master"></div>
+        <div><label>稀疏路径</label><input id="inp-path" placeholder="plugins" value="plugins"></div>
+        <button class="btn" id="addBtn" style="margin-top:18px">添加市场</button>
+        <button class="btn ghost" id="cancelAdd" style="margin-top:18px">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <h2>我的市场</h2>
+  <div id="sources"></div>
+
+  <div id="catalogWrap" style="display:none">
+    <button class="back" id="backBtn">← 返回市场列表</button>
+    <div id="catalogHead" style="margin-bottom:14px"></div>
+    <div class="grid" id="catalogGrid"></div>
+  </div>
+
+  <div id="detailWrap" style="display:none">
+    <button class="back" id="backDetail">← 返回插件列表</button>
+    <div id="detailHead" style="margin-bottom:14px"></div>
+    <div id="detailSkills"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id)
+const NS = '/skills-marketplace'
+let state = { sources: [], catalog: [], sourceId: null }
+
+async function api(method, path, body) {
+  const opt = { method, headers: {} }
+  if (body) { opt.headers['content-type'] = 'application/json'; opt.body = JSON.stringify(body) }
+  const r = await fetch(NS + path, opt)
+  const j = await r.json().catch(() => ({ ok:false }))
+  if (!r.ok && !j.ok) throw new Error(j.error || `HTTP ${r.status}`)
+  return j
+}
+
+function toast(msg, kind='') {
+  const t = $('toast'); t.textContent=msg; t.className='toast show '+kind
+  clearTimeout(t._h); t._h=setTimeout(()=>t.className='toast',2600)
+}
+
+async function loadSources() {
+  const j = await api('GET','/sources')
+  state.sources = j.sources
+  const box = $('sources'); box.innerHTML = ''
+  if (!state.sources.length) { box.innerHTML = '<div class="empty">尚未添加任何市场来源</div>'; return }
+  for (const s of state.sources) {
+    const d = document.createElement('div'); d.className='card'; d.style.marginBottom='10px'
+    d.innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <strong>${esc(s.id)}</strong>
+          <span class="muted"> · ${esc(s.url)}</span><br>
+          <span class="badge">ref ${esc(s.ref)}</span>
+          <span class="badge">sparse ${esc(s.sparsePath)}</span>
+        </div>
+        <div class="row">
+          <button class="btn ghost" data-open="${esc(s.id)}">插件目录</button>
+          <button class="btn ghost danger" data-del="${esc(s.id)}">移除</button>
+        </div>
+      </div>`
+    box.appendChild(d)
+  }
+}
+
+async function openCatalog(sourceId) {
+  try {
+    const j = await api('GET','/catalog?source='+encodeURIComponent(sourceId))
+    state.sourceId = sourceId; state.catalog = j.plugins
+    $('sources').style.display='none'
+    $('addMarketBtn').style.display='none'; $('addFormWrap').style.display='none'
+    $('catalogWrap').style.display='block'; $('detailWrap').style.display='none'
+    $('catalogHead').innerHTML = `<h2 style="margin-top:0">${esc(sourceId)} · 共 ${j.plugins.length} 个插件 / ${j.plugins.reduce((a,p)=>a+p.skills.length,0)} 个技能</h2>`
+    renderCatalog()
+  } catch(e){ toast('加载目录失败: '+e.message,'err') }
+}
+
+function renderCatalog() {
+  const grid = $('catalogGrid'); grid.innerHTML=''
+  if (!state.catalog.length) { grid.innerHTML='<div class="empty">该来源下未发现插件</div>'; return }
+  for (const p of state.catalog) {
+    const c = document.createElement('div'); c.className='plugin'
+    c.innerHTML = `<h3>${esc(p.displayName||p.id)}</h3>
+      <div class="desc">${esc(p.description||'')}</div>
+      <span class="badge">${p.skills.length} 技能</span>`
+    c.onclick = ()=> openDetail(p.id)
+    grid.appendChild(c)
+  }
+}
+
+async function openDetail(pluginId) {
+  const j = await api('GET','/installed?source='+encodeURIComponent(state.sourceId))
+  const installed = j.installed.find(x=>x.pluginId===pluginId)
+  const plugin = state.catalog.find(x=>x.id===pluginId)
+  if(!plugin) return
+  const onSet = new Set(installed?installed.skills:[])
+  $('detailWrap').style.display='block'; $('catalogWrap').style.display='none'
+  $('detailHead').innerHTML = `<h2 style="margin-top:0">${esc(plugin.displayName||plugin.id)}</h2>
+    <div class="muted">${esc(plugin.description||'')}</div>
+    <div style="margin-top:8px"><span class="badge">${esc(plugin.id)}</span> <span class="badge">${plugin.skills.length} 技能</span>
+    <span class="badge" style="color:var(--ok)">${onSet.size} 已安装</span></div>`
+  const box=$('detailSkills'); box.innerHTML=''
+  // mark catalog skills against installed set
+  for (const s of plugin.skills) {
+    const on = onSet.has(s.name)
+    const r = document.createElement('div'); r.className='skill'
+    r.innerHTML = `<div><div class="name">${esc(s.name)}</div><div class="desc">${esc(sdesc(s.name))}</div></div>
+      <label class="switch"><input type="checkbox" ${on?'checked':''} data-skill="${esc(s.name)}"><span class="slider"></span></label>`
+    box.appendChild(r)
+  }
+  box.querySelectorAll('input[data-skill]').forEach(inp=>{
+    inp.onchange = async ()=>{
+      const skill = inp.dataset.skill
+      const on = inp.checked
+      try {
+        if (on) {
+          // ensure plugin install with only this skill toggled on additively:
+          await api('POST','/install',{ sourceId:state.sourceId, pluginId })
+        } else {
+          await api('POST','/skill-toggle',{ sourceId:state.sourceId, pluginId, skill, on:false })
+        }
+        toast(on?('已启用 '+skill):('已停用 '+skill),'ok')
+        openDetail(pluginId) // refresh
+      } catch(e){ toast('操作失败: '+e.message,'err'); inp.checked=!on }
+    }
+  })
+}
+
+function sdesc(name){
+  if(!state.catalog) return ''
+  for(const p of state.catalog) for(const s of p.skills) if(s.name===name) return s.description || ''
+  return ''
+}
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) }
+
+$('addMarketBtn').onclick=()=>{ $('addFormWrap').style.display='block' }
+$('cancelAdd').onclick=()=>{ $('addFormWrap').style.display='none' }
+$('addBtn').onclick=async ()=>{
+  const url=$('inp-url').value.trim(); if(!url) return toast('请填写来源地址','err')
+  $('addBtn').disabled=true
+  try {
+    const j = await api('POST','/sources',{ url, ref:$('inp-ref').value||'master', sparsePath:$('inp-path').value||'plugins' })
+    toast(`已添加 ${j.source.id}: ${j.pluginCount} 插件 / ${j.skillCount} 技能`,'ok')
+    $('addFormWrap').style.display='none'; await loadSources()
+  } catch(e){ toast('添加失败: '+e.message,'err') } finally { $('addBtn').disabled=false }
+}
+$('backBtn').onclick=()=>{ $('catalogWrap').style.display='none'; $('sources').style.display='block'; $('addMarketBtn').style.display=''; }
+$('backDetail').onclick=()=>{ $('detailWrap').style.display='none'; $('catalogWrap').style.display='block'; }
+
+$('sources').addEventListener('click', async e=>{
+  const open=e.target.dataset.open, del=e.target.dataset.del
+  if(open){ openCatalog(open) }
+  if(del){ if(!confirm('移除来源 '+del+' ?(已装技能不受影响)')) return; await api('DELETE','/sources/'+del); await loadSources() }
+})
+
+loadSources().catch(e=>toast('初始化失败: '+e.message,'err'))
+</script>
+</body>
+</html>
