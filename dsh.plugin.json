@@ -1,0 +1,12 @@
+{
+  "name": "dsh-skills-marketplace",
+  "description": "DSH 仓库技能市场管理器",
+  "version": "0.2.0",
+  "entry": {
+    "name": "dsh-skills-marketplace",
+    "inject": []
+  },
+  "client": {
+    "platform": "web"
+  }
+}
