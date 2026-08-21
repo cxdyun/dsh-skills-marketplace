@@ -1,0 +1,56 @@
+/** Locale keys/dictionaries for the skill-market settings section. */
+export const NS = 'dsh-skills-marketplace'
+
+export const en = {
+  nav: 'SKILL Plugin Marketplace',
+  title: 'SKILL Plugin Marketplace Manager',
+  subtitle: '按 仓库地址 + 分支 + 稀疏路径 拉取插件/技能,安装进技能根',
+  addMarket: '添加插件市场',
+  source: '来源',
+  gitRef: 'Git 引用',
+  sparsePath: '稀疏路径',
+  addBtn: '添加市场',
+  cancel: '取消',
+  myMarkets: '我的市场',
+  none: '尚未添加任何市场来源',
+  pluginCatalog: '插件目录',
+  removeSource: '移除',
+  emptyCatalog: '该来源下未发现插件',
+  backToCatalog: '返回插件列表',
+  install: '安装',
+  uninstall: '卸载',
+  installedCount: '已安装',
+  skillCount: '技能',
+  noDescription: '',
+  loadFailed: '加载失败',
+  removed: '已移除',
+  error: '失败',
+}
+
+export const zh = {
+  nav: 'SKILL插件市场',
+  title: 'SKILL插件市场管理器',
+  subtitle: '按 仓库地址 + 分支 + 稀疏路径 拉取插件/技能,安装进技能根',
+  addMarket: '＋ 添加插件市场',
+  source: '来源(Git URL/org/仓库)',
+  gitRef: 'Git 引用',
+  sparsePath: '稀疏路径',
+  addBtn: '添加市场',
+  cancel: '取消',
+  myMarkets: '我的市场',
+  none: '尚未添加任何市场来源',
+  pluginCatalog: '插件目录',
+  removeSource: '移除',
+  emptyCatalog: '该来源下未发现插件',
+  backToCatalog: '返回插件列表',
+  install: '安装',
+  uninstall: '卸载',
+  installedCount: '已安装',
+  skillCount: '技能',
+  noDescription: '',
+  loadFailed: '加载失败',
+  removed: '已移除',
+  error: '失败',
+}
+
+export type SkillMarketKey = keyof typeof zh
