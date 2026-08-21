@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output (lib is tracked for npm publishing per package.json "files")
+# Keep lib if you intend to publish; uncomment to exclude built artifacts:
+# lib/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# TypeScript
+*.tsbuildinfo
+
+# Env
+.env
+.env.*
