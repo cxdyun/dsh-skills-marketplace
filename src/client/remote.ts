@@ -84,6 +84,19 @@ export class MarketRemote {
     if (!j.ok) throw new Error(j.error || 'toggle failed')
   }
 
+  /** 按来源配置(url/ref/sparsePath)增量更新到最新:重装已启用技能,清理失效技能。 */
+  async refreshSource(id: string): Promise<{ updated: string[]; pruned: string[]; commit: string | null; pluginCount: number; skillCount: number }> {
+    const j = await this.postJson(`${BASE}/refresh/${encodeURIComponent(id)}`, {})
+    if (!j.ok) throw new Error(j.error || 'refresh failed')
+    return {
+      updated: j.updated ?? [],
+      pruned: j.pruned ?? [],
+      commit: j.commit ?? null,
+      pluginCount: j.pluginCount ?? 0,
+      skillCount: j.skillCount ?? 0,
+    }
+  }
+
   private async getJson(path: string): Promise<any> {
     const r = await fetch(path, { headers: { accept: 'application/json' } })
     return this.maybeJson(r)

@@ -10,7 +10,8 @@
  *   POST /skills-marketplace/install                 安装插件 {sourceId, pluginId, skills?}
  *   POST /skills-marketplace/uninstall               卸载 {sourceId, pluginId}
  *   POST /skills-marketplace/skill-toggle            技能开关 {sourceId, pluginId, skill, on}
- *   POST /skills-marketplace/refresh/{sourceId}      增量更新
+ *   POST /skills-marketplace/refresh/{sourceId}      增量更新到用户配置 ref 的最新
+ *                                                     (只重装已启用技能,保留用户选择)
  *
  * 变更类端点(非 GET)强制同源。
  */
@@ -233,13 +234,23 @@ export function mountSkillsMarketplaceRoutes(webServer: WebServerLike, ctx: Rout
       for (const p of market.plugins) {
         const already = m.listInstalledBySource(sourceId).find((i) => i.pluginId === p.id)
         if (already) {
-          engine.installPlugin(sourceId, p)
+          // 只重装用户已启用的技能(尊重既有选择),内容覆盖为最新版本;
+          // 远端已删除的技能由 installPlugin 内部剔除并记入墓碑。
+          const available = new Set(p.skills.map((s) => s.name))
+          engine.installPlugin(sourceId, p, already.skills.filter((n) => available.has(n)))
           engine.setCommit(sourceId, p.id, market.commit)
           updated.push(p.id)
         }
       }
       const pruned = engine.pruneOrphans()
-      return sendJson(res, 200, { ok: true, updated, pruned })
+      return sendJson(res, 200, {
+        ok: true,
+        updated,
+        pruned,
+        commit: market.commit,
+        pluginCount: market.plugins.length,
+        skillCount: market.plugins.reduce((a, p) => a + p.skills.length, 0),
+      })
     } catch (e) {
       return sendJson(res, 500, { ok: false, error: (e as Error).message })
     }

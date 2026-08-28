@@ -115,6 +115,13 @@ export function cloneMarket(src: Pick<MarketSource, 'url' | 'ref' | 'sparsePath'
   r = runGit(cacheDir, ['checkout', ref])
   if (!r.ok) throw new Error(`git checkout ${ref} failed: ${r.err}`)
 
+  // 增量 fetch 后本地分支/工作区可能仍停留在旧 commit:fetch 只更新 FETCH_HEAD 与
+  // remote-tracking 引用,对已存在的本地分支 checkout 是 no-op。强制对齐到本次
+  // fetch 下来的最新快照,保证「更新」真正拿到 ref 的最新内容(缓存 .catalog.json
+  // 的 commit 比对也随之失效,自动重新解析目录)。
+  r = runGit(cacheDir, ['reset', '--hard', 'FETCH_HEAD'])
+  if (!r.ok) throw new Error(`git reset failed: ${r.err}`)
+
   return { id, cacheDir }
 }
 

@@ -33,6 +33,9 @@ const T = {
 // 中文字案
 const L: Record<string, string> = {
   myMarkets: '插件市场', none: '尚未添加任何插件市场', addMarket: '添加插件市场', edit: '编辑',
+  update: '更新', updating: '更新中',
+  confirmRemoveTitle: '移除插件市场', confirmRemoveBtn: '确认移除',
+  confirmRemoveBody: '将删除该市场的来源配置；已安装技能会保留在技能根目录，不会被删除。',
   source: '来源', sourceHint: '仓库地址 · org/repo 或 https/git 链接',
   gitRef: 'Git 引用', gitRefHint: '分支、Tag 或 commit',
   sparsePath: '稀疏路径', sparsePathHint: '可选，插件子目录，如 plugins/',
@@ -61,8 +64,8 @@ const styles: Record<string, React.CSSProperties> = {
   capiHeadLeft: { flex: 1, minWidth: 0 },
   capiName: { fontWeight: 600, fontSize: 14, lineHeight: '20px', color: T.l1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const,
   capiUrl: { fontSize: 11, color: T.l3, fontFamily: 'ui-monospace,Menlo,monospace', overflowWrap: 'anywhere', margin: '2px 0 6px' },
-  capiTrailing: { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, minWidth: 150 },
-  capiChevron: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 28px', width: 28, height: 28, padding: 0, margin: 0, border: 0, borderRadius: 6, background: 'transparent', color: T.l3, cursor: 'pointer', appearance: 'none' } as const,
+  capiTrailing: { display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 },
+  capiChevron: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 28px', width: 28, height: 28, padding: 0, margin: '0 0 0 6px', border: 0, borderRadius: 6, background: 'transparent', color: T.l3, cursor: 'pointer', appearance: 'none' } as const,
   capiChevronIcon: { flex: 'none', transition: 'transform .16s var(--ds-ease-in-out,ease)' } as const,
   capiChevronOpen: { transform: 'rotate(180deg)' } as const,
   capiDetails: { borderTop: `1px solid ${T.borderSoft}`, background: T.bgPlatform, padding: '12px 14px 14px' } as const,
@@ -73,7 +76,10 @@ const styles: Record<string, React.CSSProperties> = {
   fieldHelp: { fontSize: 11, color: T.l3, margin: 0 },
   fieldInput: { width: '100%', minWidth: 0 } as const,
   formActions: { display: 'flex', gap: 8, marginTop: 4 },
-  actionButton: { flexShrink: 0, minWidth: 64, whiteSpace: 'nowrap' } as const,
+  // 卡头操作按钮:紧凑文字化(收窄内边距、宽度随文字自适应),避免三枚按钮占满卡头
+  actionButton: { flexShrink: 0, minWidth: 0, padding: '0 6px', whiteSpace: 'nowrap' } as const,
+  // 高敏感操作(移除来源):红色文字、无边框,与常规操作区分
+  dangerButton: { flexShrink: 0, minWidth: 0, padding: '0 6px', whiteSpace: 'nowrap', color: T.error } as const,
   configAction: { boxSizing: 'border-box', minWidth: 'auto', height: 32, padding: '0 14px', border: `1px solid ${T.border2}`, borderRadius: 999, background: 'transparent', color: T.l1, fontSize: 13, lineHeight: '20px', fontWeight: 400, boxShadow: 'none' } as const,
   loadingLabel: { display: 'inline-flex', alignItems: 'center', gap: 6 } as const,
   loadingSpinner: { display: 'inline-flex', flex: '0 0 16px', width: 16, height: 16, animation: 'dsh-skills-spin 0.8s linear infinite', transformOrigin: '50% 50%' } as const,
@@ -100,6 +106,15 @@ const styles: Record<string, React.CSSProperties> = {
   empty: { display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.l2, fontSize: 13, padding: '24px 16px', textAlign: 'center', width: '100%', boxSizing: 'border-box' } as const,
   catalogLoading: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: T.l2, fontSize: 13, padding: 32 } as const,
   err: { color: T.error, fontSize: 12, margin: '8px 0', whiteSpace: 'pre-wrap' } as const,
+  // 成功类轻提示(与 err 对应,复用同一位置规则)
+  notice: { color: T.success, fontSize: 12, margin: '8px 0', whiteSpace: 'pre-wrap' } as const,
+  // 移除二次确认弹窗:遮罩 + 居中卡片,确认按钮为红色
+  modalMask: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 } as const,
+  modalCard: { background: T.bg1, border: `1px solid ${T.borderSoft}`, borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,.28)', maxWidth: 380, width: '100%', padding: '18px 18px 14px', display: 'flex', flexDirection: 'column', gap: 10, boxSizing: 'border-box' } as const,
+  modalTitle: { fontSize: 15, fontWeight: 600, lineHeight: '22px', color: T.l1, margin: 0 } as const,
+  modalName: { fontSize: 12, color: T.l3, fontFamily: 'ui-monospace,Menlo,monospace', margin: 0, overflowWrap: 'anywhere' } as const,
+  modalBody: { fontSize: 13, lineHeight: '20px', color: T.l2, margin: 0 } as const,
+  modalActions: { display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 } as const,
 }
 
 type CSSN = React.CSSProperties
@@ -118,10 +133,14 @@ export function SkillMarketSection(props: { remote?: MarketRemote }) {
   const [busy, setBusy] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
   const [removing, setRemoving] = useState<string | null>(null)
+  const [updating, setUpdating] = useState<string | null>(null)
+  // 待二次确认移除的市场(null = 弹窗关闭)
+  const [confirming, setConfirming] = useState<MarketSource | null>(null)
   const [expandedSource, setExpandedSource] = useState<string | null>(null)
   const [hoveredSource, setHoveredSource] = useState<string | null>(null)
   const [catalogLoading, setCatalogLoading] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [form, setForm] = useState({ url: '', ref: '', sparsePath: '' })
 
   const loadSources = useCallback(async () => {
@@ -140,6 +159,14 @@ export function SkillMarketSection(props: { remote?: MarketRemote }) {
   }, [remote])
 
   useEffect(() => { void loadSources() }, [loadSources])
+
+  // 确认弹窗打开时,Esc 视为取消
+  useEffect(() => {
+    if (!confirming) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setConfirming(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [confirming])
 
   /** 打开插件目录:立即用缓存渲染(若已缓存),后台刷新。 */
   const openCatalog = useCallback(async (sid: string, forceOpen = false) => {
@@ -200,7 +227,33 @@ export function SkillMarketSection(props: { remote?: MarketRemote }) {
       setInstalledBySource((current) => { const next = { ...current }; delete next[id]; return next })
       setExpandedSource((current) => current === id ? null : current)
       await loadSources()
+      setConfirming(null) // 移除成功后关闭确认弹窗
     } catch (e) { setError(String((e as Error).message)) } finally { setRemoving(null) }
+  }
+
+  /**
+   * 更新市场:按用户配置(url/ref/稀疏路径)增量拉取 ref 最新内容,
+   * 只重装已启用技能(保留逐技能开关的选择),然后刷新目录与已装视图。
+   */
+  const refreshSource = async (s: MarketSource) => {
+    setUpdating(s.id); setError(''); setNotice('')
+    // 先亮起目录 loading:更新后 HEAD 前进,服务端缓存自动失效,重新拉取目录。
+    setCatalogLoading(s.id)
+    try {
+      const r = await remote.refreshSource(s.id)
+      setCatalogs((current) => { const next = { ...current }; delete next[s.id]; return next })
+      await openCatalog(s.id, true)
+      const parts = [
+        `${sourceName(s)} 已更新${r.commit ? ` · ${r.commit.slice(0, 7)}` : ''}`,
+        `同步 ${r.updated.length} 个已装插件`,
+        `目录 ${r.pluginCount} 插件 / ${r.skillCount} 技能`,
+      ]
+      if (r.pruned.length) parts.push(`清理 ${r.pruned.length} 个失效技能`)
+      setNotice(parts.join(' · '))
+    } catch (e) {
+      setCatalogLoading((current) => current === s.id ? null : current)
+      setError(String((e as Error).message))
+    } finally { setUpdating((current) => current === s.id ? null : current) }
   }
 
   // —— 乐观更新:先即时改 UI,后台落盘,不阻塞点击 ——
@@ -303,6 +356,7 @@ export function SkillMarketSection(props: { remote?: MarketRemote }) {
     <div style={styles.root as CSSN}>
       <style>{'@keyframes dsh-skills-spin{to{transform:rotate(360deg)}}'}</style>
       {error && <div style={styles.err as CSSN}>{t('error')}: {error}</div>}
+      {notice && !error && <div style={styles.notice as CSSN}>{notice}</div>}
 
       {view.kind === 'sources' && (
         <>
@@ -370,8 +424,17 @@ export function SkillMarketSection(props: { remote?: MarketRemote }) {
                     </div>
                   </div>
                   <div style={styles.capiTrailing as CSSN} onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="sm" style={styles.actionButton as CSSN} onClick={() => editSource(s)}>{t('edit')}</Button>
-                    <Button variant="outline" size="sm" style={styles.actionButton as CSSN} disabled={removing === s.id} onClick={() => removeSource(s.id)}>{removing === s.id ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN}><IconLoadingOutline16 /></span>{t('removeSource')}</span> : t('removeSource')}</Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      style={styles.actionButton as CSSN}
+                      disabled={updating === s.id}
+                      onClick={() => refreshSource(s)}
+                    >{updating === s.id
+                      ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN}><IconLoadingOutline16 /></span>{t('updating')}</span>
+                      : t('update')}</Button>
+                    <Button variant="ghost" size="sm" style={styles.actionButton as CSSN} disabled={updating === s.id} onClick={() => editSource(s)}>{t('edit')}</Button>
+                    <Button variant="ghost" size="sm" style={styles.dangerButton as CSSN} disabled={removing === s.id || updating === s.id} onClick={() => { setError(''); setConfirming(s) }}>{removing === s.id ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN}><IconLoadingOutline16 /></span>{t('removeSource')}</span> : t('removeSource')}</Button>
                     <button
                       type="button"
                       aria-label={open ? t('collapse') : t('pluginCatalog')}
@@ -456,6 +519,38 @@ export function SkillMarketSection(props: { remote?: MarketRemote }) {
             )
           })()}
         </>
+      )}
+
+      {/* 移除二次确认弹窗:防误删;确认执行后由 removeSource 成功路径关闭 */}
+      {confirming && (
+        <div
+          style={styles.modalMask as CSSN}
+          onClick={() => { if (removing !== confirming.id) setConfirming(null) }}
+        >
+          <div
+            style={styles.modalCard as CSSN}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('confirmRemoveTitle')}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p style={styles.modalTitle as CSSN}>{t('confirmRemoveTitle')}</p>
+            <p style={styles.modalName as CSSN}>{sourceName(confirming)} · {confirming.url}</p>
+            <p style={styles.modalBody as CSSN}>{t('confirmRemoveBody')}</p>
+            <div style={styles.modalActions as CSSN}>
+              <Button variant="ghost" size="sm" style={styles.actionButton as CSSN} disabled={removing === confirming.id} onClick={() => setConfirming(null)}>{t('cancel')}</Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                style={styles.dangerButton as CSSN}
+                disabled={removing === confirming.id}
+                onClick={() => removeSource(confirming.id)}
+              >{removing === confirming.id
+                ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN}><IconLoadingOutline16 /></span>{t('confirmRemoveBtn')}</span>
+                : t('confirmRemoveBtn')}</Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

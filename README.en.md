@@ -110,6 +110,14 @@ Open a plugin card to manage its skills with the overall or per-skill toggle.
 
 ![Manage skills](./docs/images/manage-skills.png)
 
+### 4. Update a marketplace
+
+Click **Update** on a market card to incrementally pull the latest content of the configured ref (repo URL + git ref + sparse path):
+
+- files of enabled skills are refreshed to the latest version;
+- your per-skill choices are preserved (disabled skills stay off, new skills are not auto-installed);
+- skills removed upstream are pruned safely (only managed skills are ever touched).
+
 ### Verify the CLI without DSH
 
 You can verify the core pipeline without installing DSH:
@@ -224,7 +232,7 @@ Commands: `add`, `list`, `catalog`, `install`, `install-all`, `uninstall`, `refr
 | POST | `/skills-marketplace/install` | `{sourceId, pluginId, skills?}` |
 | POST | `/skills-marketplace/uninstall` | `{sourceId, pluginId}` |
 | POST | `/skills-marketplace/skill-toggle` | `{sourceId, pluginId, skill, on}` |
-| POST | `/skills-marketplace/refresh/<sourceId>` | incremental update |
+| POST | `/skills-marketplace/refresh/<sourceId>` | incremental update to the latest of the configured ref (only re-installs enabled skills, preserving choices) |
 
 All non-GET endpoints enforce **same-origin** (verified to reject cross-origin with 403).
 
@@ -234,7 +242,7 @@ All non-GET endpoints enforce **same-origin** (verified to reject cross-origin w
 
 Open `client/market.html` (or use the DSH **Settings → Skills Marketplace** section):
 
-- **My markets** — source cards (shows `ref`/`sparse`) with an “Add plugin marketplace” form (source / branch / sparse path).
+- **My markets** — source cards (shows `ref`/`sparse`) with an “Add plugin marketplace” form (source / branch / sparse path) and **Update / Edit / Remove** actions; **Update** incrementally pulls the latest of the configured ref while preserving skill choices.
 - **Plugin catalog** — rendered inside the **same card** as the source (mirrors DSH’s built-in inline-expanding plugin-list card): clicking a market card header expands/collapses the plugin grid in-place, no longer detached from its source; the card highlights with a border/shadow and the chevron rotates. Each plugin badge shows its skill and installed counts.
 - **Plugin details** — per-skill toggles: on = installed into `~/.dsh/skills`, off = removed from the manifest and uninstalled.
 

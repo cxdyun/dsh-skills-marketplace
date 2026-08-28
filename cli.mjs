@@ -106,13 +106,16 @@ async function main() {
       for (const p of market.plugins) {
         const already = manifest.listInstalledBySource(sourceId).find((i) => i.pluginId === p.id)
         if (already) {
-          engine.installPlugin(sourceId, p)
+          // 只重装已启用技能,保留用户逐技能开关的选择
+          const available = new Set(p.skills.map((s) => s.name))
+          engine.installPlugin(sourceId, p, already.skills.filter((n) => available.has(n)))
           engine.setCommit(sourceId, p.id, market.commit)
           console.log(`↻ updated ${p.displayName}`)
         }
       }
       const pruned = engine.pruneOrphans()
       if (pruned.length) console.log(`pruned orphans: ${pruned.join(', ')}`)
+      console.log(`✔ refreshed @${market.commit?.slice(0, 8) ?? '-'}`)
       break
     }
     case 'prune': {

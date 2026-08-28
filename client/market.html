@@ -21,7 +21,7 @@
   .btn{background:var(--accent2);border:none;color:#fff;border-radius:8px;padding:8px 14px;
        cursor:pointer;font-size:13px} .btn:hover{filter:brightness(1.1)}
   .btn.ghost{background:var(--panel2);border:1px solid var(--border);color:var(--text)}
-  .btn.danger{background:#3a1f24;border:1px solid #6b3a42;color:var(--err)}
+  .btn.danger{background:transparent;border:1px solid transparent;color:var(--err)}
   .btn:disabled{opacity:.5;cursor:not-allowed}
   input,select{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
        color:var(--text);padding:8px 10px;font-size:13px;min-width:180px}
@@ -124,6 +124,7 @@ async function loadSources() {
         </div>
         <div class="row">
           <button class="btn ghost" data-open="${esc(s.id)}">插件目录</button>
+          <button class="btn ghost" data-refresh="${esc(s.id)}">更新</button>
           <button class="btn ghost danger" data-del="${esc(s.id)}">移除</button>
         </div>
       </div>`
@@ -217,8 +218,21 @@ $('backBtn').onclick=()=>{ $('catalogWrap').style.display='none'; $('sources').s
 $('backDetail').onclick=()=>{ $('detailWrap').style.display='none'; $('catalogWrap').style.display='block'; }
 
 $('sources').addEventListener('click', async e=>{
-  const open=e.target.dataset.open, del=e.target.dataset.del
+  const open=e.target.dataset.open, del=e.target.dataset.del, refresh=e.target.dataset.refresh
   if(open){ openCatalog(open) }
+  if(refresh){
+    // 按用户配置(url/ref/稀疏路径)增量更新到最新;只重装已启用技能,保留选择。
+    const btn=e.target; btn.disabled=true; const old=btn.textContent; btn.textContent='更新中…'
+    try {
+      const j=await api('POST','/refresh/'+encodeURIComponent(refresh))
+      const extra=j.pruned&&j.pruned.length?`,清理 ${j.pruned.length} 个失效技能`:''
+      toast(`已更新${j.commit?` (${String(j.commit).slice(0,7)})`:''}:同步 ${j.updated.length} 个已装插件,目录 ${j.pluginCount} 插件 / ${j.skillCount} 技能${extra}`,'ok')
+      await loadSources()
+      // 若正打开该来源目录,重新加载以反映最新清单
+      if(state.sourceId===refresh && $('catalogWrap').style.display!=='none') await openCatalog(refresh)
+    } catch(err){ toast('更新失败: '+err.message,'err') }
+    finally { btn.disabled=false; btn.textContent=old }
+  }
   if(del){ if(!confirm('移除来源 '+del+' ?(已装技能不受影响)')) return; await api('DELETE','/sources/'+del); await loadSources() }
 })
 

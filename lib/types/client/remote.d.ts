@@ -54,6 +54,14 @@ export declare class MarketRemote {
     installPlugin(sourceId: string, pluginId: string, skills?: string[]): Promise<void>;
     uninstallPlugin(sourceId: string, pluginId: string): Promise<void>;
     toggleSkill(sourceId: string, pluginId: string, skill: string, on: boolean): Promise<void>;
+    /** 按来源配置(url/ref/sparsePath)增量更新到最新:重装已启用技能,清理失效技能。 */
+    refreshSource(id: string): Promise<{
+        updated: string[];
+        pruned: string[];
+        commit: string | null;
+        pluginCount: number;
+        skillCount: number;
+    }>;
     private getJson;
     private postJson;
     private delete;

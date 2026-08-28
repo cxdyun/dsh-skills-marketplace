@@ -10,7 +10,8 @@
  *   POST /skills-marketplace/install                 安装插件 {sourceId, pluginId, skills?}
  *   POST /skills-marketplace/uninstall               卸载 {sourceId, pluginId}
  *   POST /skills-marketplace/skill-toggle            技能开关 {sourceId, pluginId, skill, on}
- *   POST /skills-marketplace/refresh/{sourceId}      增量更新
+ *   POST /skills-marketplace/refresh/{sourceId}      增量更新到用户配置 ref 的最新
+ *                                                     (只重装已启用技能,保留用户选择)
  *
  * 变更类端点(非 GET)强制同源。
  */
