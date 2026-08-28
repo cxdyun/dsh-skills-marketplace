@@ -31,6 +31,12 @@ dsh --profile <profile>
 
 ## 在 DSH Desktop 中添加插件市场
 
+### 先安装本插件
+
+打开 **设置 → 插件市场（dsh-market）**，搜索 `dsh-skills-marketplace`。打开搜索结果卡片并点击安装；安装完成后会显示「已安装」，重启 DeepSeek Harness 后生效。
+
+![在 DSH Desktop 的插件市场搜索 dsh-skills-marketplace](./docs/images/install-from-dsh-market.png)
+
 ### 1. 添加插件市场
 
 打开 **设置 → Skill 插件市场**，点击「添加插件市场」。填写技能仓库地址和 Git 引用；稀疏路径为可选项，仓库根目录就是技能市场时保持为空。
