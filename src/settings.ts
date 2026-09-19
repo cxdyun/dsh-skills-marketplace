@@ -5,7 +5,7 @@
  * 在 DSH 设置页原生持久化。schema 用 schemastery(宿主提供 @deepseek-ai/schemastery)
  * 在运行时动态构建,避免构建期强依赖。
  *
- * 命名空间:skillMarket —— { installRoot, autoInstall }
+ * 命名空间:skill-market —— { installRoot, autoInstall }
  * 说明:来源与已安装清单由 Manifest(markets.json)持久化;这里只登记轻量偏好。
  */
 
@@ -21,7 +21,7 @@ export interface SettingsScopeLike {
   update(patch: Record<string, unknown>): Promise<Record<string, unknown>> | Record<string, unknown>
 }
 
-export const SKILL_MARKET_NAMESPACE = 'skillMarket'
+export const SKILL_MARKET_NAMESPACE = 'skill-market'
 
 /**
  * 运行时动态构建 schemastery schema。

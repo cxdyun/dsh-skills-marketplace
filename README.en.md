@@ -173,7 +173,7 @@ The built package is a **DSH (cordis) plugin** with two sides:
 
 - **Host side** (`lib/index.js`)
   - declares `inject = ['settings', 'webServer']`;
-  - registers the `skillMarket` settings namespace (`installRoot`, `autoInstall`) so it persists in the DSH settings page;
+  - registers the `skill-market` settings namespace (`installRoot`, `autoInstall`) so it persists in the DSH settings page;
   - mounts the `/skills-marketplace/*` HTTP routes for the GUI and CLI.
 - **Client side** (`lib/client.js`)
   - registers a **`settings.section`** named **“Skills Marketplace”** (`SkillMarketSection`) inside the DSH settings page;

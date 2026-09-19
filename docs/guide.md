@@ -207,7 +207,7 @@ node cli.mjs prune                           # 清理墓碑
 
 - **Host 半区 / Host side**（`lib/index.js`）
   - 声明 `inject = ['settings', 'webServer']`；
-  - 注册 `skillMarket` 设置命名空间（`installRoot`、`autoInstall`），使其持久化到 DSH 设置页；
+  - 注册 `skill-market` 设置命名空间（`installRoot`、`autoInstall`），使其持久化到 DSH 设置页；
   - 挂载 `/skills-marketplace/*` HTTP 路由供 GUI 与 CLI 使用。
 - **Client 半区 / Client side**（`lib/client.js`）
   - 在 DSH 设置页注册名为 **「Skill 插件市场 / Skills Marketplace」** 的 **`settings.section`**（`SkillMarketSection`）；

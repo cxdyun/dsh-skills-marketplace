@@ -2,7 +2,7 @@
  * index.ts — dsh-skills-marketplace 的 cordis 插件入口(host 半区)
  *
  * 职责:
- *   1. 注册 skillMarket 设置命名空间(ctx.settings),让技能市场设置原生持久化于 DSH 设置页。
+ *   1. 注册 skill-market 设置命名空间(ctx.settings),让技能市场设置原生持久化于 DSH 设置页。
  *   2. 挂载 /skills-marketplace/* HTTP 路由(webServer),供 client 半区与 CLI 使用。
  *
  * 注意:cordis/cordis-plugin-loader 在 apply() 顶层读取尚未 inject 的服务属性会抛
