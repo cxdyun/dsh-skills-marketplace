@@ -35,6 +35,7 @@ export interface InstalledPlugin {
 }
 
 const BASE = '/skills-marketplace'
+const WRITE_HEADERS = { 'content-type': 'application/json', 'x-dsh-skills-marketplace': '1' }
 
 export class MarketRemote {
   async listSources(): Promise<MarketSource[]> {
@@ -105,19 +106,19 @@ export class MarketRemote {
   private async postJson(path: string, body: unknown): Promise<any> {
     const r = await fetch(path, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: WRITE_HEADERS,
       body: JSON.stringify(body),
     })
     return this.maybeJson(r)
   }
 
   private async delete(path: string): Promise<any> {
-    const r = await fetch(path, { method: 'DELETE' })
+    const r = await fetch(path, { method: 'DELETE', headers: { 'x-dsh-skills-marketplace': '1' } })
     return this.maybeJson(r)
   }
 
   private async putJson(path: string, body: unknown): Promise<any> {
-    const r = await fetch(path, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+    const r = await fetch(path, { method: 'PUT', headers: WRITE_HEADERS, body: JSON.stringify(body) })
     return this.maybeJson(r)
   }
 

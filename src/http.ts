@@ -17,7 +17,22 @@ export function sendJson(response: ServerResponse, status: number, payload: unkn
 export function sameOrigin(request: IncomingMessage): boolean {
   const origin = request.headers.origin
   const host = request.headers.host
-  if (origin === undefined || host === undefined) return false
+  if (host === undefined) return false
+  if (origin === undefined) {
+    const fetchSite = request.headers['sec-fetch-site']
+    if (fetchSite !== undefined) return fetchSite === 'same-origin'
+    const referer = request.headers.referer
+    if (referer !== undefined) {
+      try {
+        return new URL(referer).host === host
+      } catch {
+        return false
+      }
+    }
+    // DSH's dsh-app:// renderer omits browser origin metadata; this non-simple header
+    // keeps cross-site browser requests behind CORS preflight while identifying our UI.
+    return request.headers['x-dsh-skills-marketplace'] === '1'
+  }
   try {
     return new URL(origin).host === host
   } catch {

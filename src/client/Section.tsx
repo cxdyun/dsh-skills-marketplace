@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
-import { Button, Pill, Input, IconChevronDownOutline14, IconLoadingOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, Pill, Input } from '@deepseek-ai/dsh-client-ui-primitives'
 import { MarketRemote, type PluginBrief, type InstalledPlugin, type MarketSource } from './remote.ts'
 
 // ---- 官方 alias token(宿主 design-platform.css 提供,自适应主题) ----
@@ -82,7 +82,7 @@ const styles: Record<string, React.CSSProperties> = {
   dangerButton: { flexShrink: 0, minWidth: 0, padding: '0 6px', whiteSpace: 'nowrap', color: T.error } as const,
   configAction: { boxSizing: 'border-box', minWidth: 'auto', height: 32, padding: '0 14px', border: `1px solid ${T.border2}`, borderRadius: 999, background: 'transparent', color: T.l1, fontSize: 13, lineHeight: '20px', fontWeight: 400, boxShadow: 'none' } as const,
   loadingLabel: { display: 'inline-flex', alignItems: 'center', gap: 6 } as const,
-  loadingSpinner: { display: 'inline-flex', flex: '0 0 16px', width: 16, height: 16, animation: 'dsh-skills-spin 0.8s linear infinite', transformOrigin: '50% 50%' } as const,
+  loadingSpinner: { display: 'inline-flex', flex: '0 0 16px', width: 16, height: 16, boxSizing: 'border-box', border: '2px solid currentColor', borderRightColor: 'transparent', borderRadius: '50%', animation: 'dsh-skills-spin 0.8s linear infinite', transformOrigin: '50% 50%' } as const,
   // 插件网格卡
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px,1fr))', gap: 10 },
   plug: { background: T.bg2, border: `1px solid ${T.borderSoft}`, borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 6, cursor: 'pointer' } as const,
@@ -391,7 +391,7 @@ export function SkillMarketSection(props: { remote?: MarketRemote }) {
                 </div>
               </div>
               <div style={styles.formActions as CSSN}>
-                <Button variant="outline" size="sm" style={styles.configAction as CSSN} onClick={addSource} disabled={busy}>{busy ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN}><IconLoadingOutline16 /></span>保存</span> : editing ? t('saveBtn') : t('addBtn')}</Button>
+                <Button variant="outline" size="sm" style={styles.configAction as CSSN} onClick={addSource} disabled={busy}>{busy ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN} />保存</span> : editing ? t('saveBtn') : t('addBtn')}</Button>
                 <Button variant="ghost" size="md" style={styles.actionButton as CSSN} onClick={() => { setAdding(false); setEditing(null); setForm({ url: '', ref: '', sparsePath: '' }) }}>{t('cancel')}</Button>
               </div>
             </div>
@@ -431,23 +431,23 @@ export function SkillMarketSection(props: { remote?: MarketRemote }) {
                       disabled={updating === s.id}
                       onClick={() => refreshSource(s)}
                     >{updating === s.id
-                      ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN}><IconLoadingOutline16 /></span>{t('updating')}</span>
+                      ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN} />{t('updating')}</span>
                       : t('update')}</Button>
                     <Button variant="ghost" size="sm" style={styles.actionButton as CSSN} disabled={updating === s.id} onClick={() => editSource(s)}>{t('edit')}</Button>
-                    <Button variant="ghost" size="sm" style={styles.dangerButton as CSSN} disabled={removing === s.id || updating === s.id} onClick={() => { setError(''); setConfirming(s) }}>{removing === s.id ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN}><IconLoadingOutline16 /></span>{t('removeSource')}</span> : t('removeSource')}</Button>
+                    <Button variant="ghost" size="sm" style={styles.dangerButton as CSSN} disabled={removing === s.id || updating === s.id} onClick={() => { setError(''); setConfirming(s) }}>{removing === s.id ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN} />{t('removeSource')}</span> : t('removeSource')}</Button>
                     <button
                       type="button"
                       aria-label={open ? t('collapse') : t('pluginCatalog')}
                       style={styles.capiChevron as CSSN}
                       onClick={(e) => { e.stopPropagation(); void openCatalog(s.id) }}
-                    ><IconChevronDownOutline14 style={{ ...styles.capiChevronIcon as CSSN, ...(open ? styles.capiChevronOpen : null) }} /></button>
+                    ><span aria-hidden="true" style={{ ...styles.capiChevronIcon as CSSN, ...(open ? styles.capiChevronOpen : null) }}>⌄</span></button>
                   </div>
                 </div>
                 {/* 卡片内展开区:插件清单位于同一卡片内部,不再与市场源割裂 */}
                 {open && (
                   <div style={styles.capiDetails as CSSN}>
                     {catalogLoading === s.id
-                      ? <div style={styles.catalogLoading as CSSN}><span style={styles.loadingSpinner as CSSN}><IconLoadingOutline16 /></span><span>{t('catalogLoading')}</span></div>
+                      ? <div style={styles.catalogLoading as CSSN}><span style={styles.loadingSpinner as CSSN} /><span>{t('catalogLoading')}</span></div>
                       : (catalogs[s.id] ?? []).length === 0
                         ? <div style={styles.empty as CSSN}>{t('emptyCatalog')}</div>
                         : <div style={styles.grid as CSSN}>{pluginCards(s.id)}</div>}
@@ -546,7 +546,7 @@ export function SkillMarketSection(props: { remote?: MarketRemote }) {
                 disabled={removing === confirming.id}
                 onClick={() => removeSource(confirming.id)}
               >{removing === confirming.id
-                ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN}><IconLoadingOutline16 /></span>{t('confirmRemoveBtn')}</span>
+                ? <span style={styles.loadingLabel as CSSN}><span style={styles.loadingSpinner as CSSN} />{t('confirmRemoveBtn')}</span>
                 : t('confirmRemoveBtn')}</Button>
             </div>
           </div>
